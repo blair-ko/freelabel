@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreeLabel Studio — 網頁版連續標籤列印設計器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fredoka:wght@500;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Klee+One:wght@600&family=Mochiy+Pop+One&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Zen+Maru+Gothic:wght@500;700;900&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Top Header / Toolbar -->
+    <header class="topbar no-print">
+      <div class="topbar-left">
+        <div class="brand">
+          <div class="brand-logo" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7V4h16v3" />
+              <path d="M9 20h6" />
+              <path d="M12 4v16" />
+              <rect x="3" y="9" width="18" height="7" rx="2" fill="currentColor" fill-opacity="0.15" />
+            </svg>
+          </div>
+          <div>
+            <span class="brand-name">FreeLabel</span>
+            <span class="brand-badge">連續標籤設計列印</span>
+          </div>
+        </div>
+
+        <div class="divider-v"></div>
+
+        <div class="tool-group">
+          <button class="icon-btn" id="btn-undo" title="復原 (Ctrl+Z)" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          </button>
+          <button class="icon-btn" id="btn-redo" title="重做 (Ctrl+Y)" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+          </button>
+        </div>
+
+        <div class="divider-v"></div>
+
+        <div class="tool-group">
+          <button class="pill-btn" id="btn-toggle-grid" title="顯示格線">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+            <span>格線</span>
+          </button>
+          <button class="pill-btn" id="btn-toggle-thermal" title="熱感應黑白列印預覽">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor"/></svg>
+            <span>熱感應預覽</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="topbar-center">
+        <div class="zoom-controls">
+          <button class="icon-btn" id="btn-zoom-out" title="縮小">−</button>
+          <span id="zoom-label" class="zoom-label">100%</span>
+          <button class="icon-btn" id="btn-zoom-in" title="放大">+</button>
+          <button class="icon-btn" id="btn-zoom-fit" title="符合畫面">⊡</button>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="pill-btn" id="btn-batch-modal" title="批次產生序號標籤">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+          <span>批次序號</span>
+        </button>
+        <div class="dropdown-wrap">
+          <button class="pill-btn" id="btn-export-menu">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>匯出</span>
+          </button>
+          <div class="dropdown-menu" id="export-menu">
+            <button id="btn-export-svg">匯出當前標籤 (SVG 向量)</button>
+            <button id="btn-export-png">匯出當前標籤 (PNG 高清)</button>
+            <button id="btn-export-json">儲存專案檔 (.json)</button>
+            <label class="file-menu-item">
+              匯入專案檔 (.json)
+              <input type="file" id="input-import-json" accept=".json" hidden />
+            </label>
+          </div>
+        </div>
+        <button class="primary-btn" id="btn-print">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <span>連續列印 (<span id="print-count-badge">1</span>)</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main 3-Column Studio Workspace -->
+    <div class="workspace no-print">
+      <!-- Left Sidebar: Asset & Element Library -->
+      <aside class="left-panel">
+        <nav class="tab-rail" aria-label="元件庫分類">
+          <button class="rail-btn active" data-tab="templates" title="精選範本">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            <span>範本</span>
+          </button>
+          <button class="rail-btn" data-tab="textboxes" title="文字框與特效">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            <span>文字框</span>
+          </button>
+          <button class="rail-btn" data-tab="icons" title="SVG 圖示庫">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            <span>圖示</span>
+          </button>
+          <button class="rail-btn" data-tab="shapes" title="圖形與邊框">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>圖形</span>
+          </button>
+          <button class="rail-btn" data-tab="codes" title="條碼與 QR Code">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14M7 5v14M10 5v14M14 5v14M17 5v14M21 5v14"/></svg>
+            <span>條碼</span>
+          </button>
+          <button class="rail-btn" data-tab="layers" title="圖層管理">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            <span>圖層</span>
+          </button>
+        </nav>
+
+        <div class="panel-drawer" id="left-drawer">
+          <!-- Dynamic content rendered by JS -->
+        </div>
+      </aside>
+
+      <!-- Center: Canvas Stage + Bottom Continuous Roll Strip -->
+      <main class="stage-area">
+        <div class="canvas-viewport" id="canvas-viewport">
+          <div class="canvas-stage" id="canvas-stage">
+            <div class="label-paper" id="label-paper">
+              <div class="label-grid-overlay" id="label-grid"></div>
+              <div class="label-elements" id="label-elements"></div>
+              <div class="snap-guides" id="snap-guides"></div>
+              <div class="selection-overlay" id="selection-overlay"></div>
+            </div>
+            <div class="paper-dimensions-tag" id="paper-dimensions-tag">60 × 40 mm</div>
+          </div>
+        </div>
+
+        <!-- Bottom Continuous Strip Queue -->
+        <section class="strip-dock" aria-label="連續標籤列印佇列">
+          <div class="strip-header">
+            <div class="strip-title">
+              <span class="dot-live"></span>
+              <strong>連續標籤紙捲佇列</strong>
+              <span class="strip-meta" id="strip-meta">共 1 張標籤</span>
+            </div>
+            <div class="strip-actions">
+              <button class="mini-btn" id="btn-select-all-labels" title="全選/僅選目前標籤">全選</button>
+              <button class="mini-btn" id="btn-dup-label" title="複製目前標籤到下一張">+ 複製此張</button>
+              <button class="mini-btn primary" id="btn-add-label" title="新增空白標籤">+ 新增空白標籤</button>
+            </div>
+          </div>
+          <div class="strip-track" id="strip-track">
+            <!-- Label thumbnails rendered here -->
+          </div>
+        </section>
+      </main>
+
+      <!-- Right Sidebar: Context-Sensitive Inspector -->
+      <aside class="right-panel" id="right-panel">
+        <!-- Rendered dynamically based on selection or label settings -->
+      </aside>
+    </div>
+  </div>
+
+  <!-- Batch Sequence Modal -->
+  <dialog id="batch-modal" class="studio-dialog">
+    <form method="dialog" class="dialog-card" id="batch-form">
+      <div class="dialog-header">
+        <h3>批次產生連續序號標籤</h3>
+        <button type="button" class="icon-btn" id="btn-close-batch">✕</button>
+      </div>
+      <div class="dialog-body">
+        <p class="dialog-desc">以目前標籤為範本，自動替換文字中的變數（例如 <code>{n}</code>），快速產生多張連續標籤。</p>
+        <div class="form-grid">
+          <label>
+            <span>起始編號</span>
+            <input type="number" id="batch-start" value="1" min="0" />
+          </label>
+          <label>
+            <span>產生張數</span>
+            <input type="number" id="batch-count" value="5" min="1" max="100" />
+          </label>
+          <label>
+            <span>補零位數</span>
+            <input type="number" id="batch-pad" value="3" min="1" max="8" />
+          </label>
+          <label>
+            <span>目標文字</span>
+            <input type="text" id="batch-pattern" value="NO.{n}" placeholder="例如 NO.{n}" />
+          </label>
+        </div>
+        <p class="dialog-hint">系統會自動尋找標籤中含有 <code>{n}</code> 的文字或條碼內容進行替換；若無 <code>{n}</code>，則會將序號附加在最後一個文字框後方。</p>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="pill-btn" id="btn-cancel-batch">取消</button>
+        <button type="submit" class="primary-btn">產生並加入佇列</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Custom SVG Modal -->
+  <dialog id="svg-modal" class="studio-dialog">
+    <form method="dialog" class="dialog-card" id="svg-form">
+      <div class="dialog-header">
+        <h3>匯入自訂 SVG 向量圖形</h3>
+        <button type="button" class="icon-btn" id="btn-close-svg">✕</button>
+      </div>
+      <div class="dialog-body">
+        <label class="stack-label">
+          <span>貼上 SVG 程式碼</span>
+          <textarea id="custom-svg-code" rows="6" placeholder='<svg viewBox="0 0 24 24">...</svg>'></textarea>
+        </label>
+        <div class="upload-row">
+          <span>或選擇本機 .svg 檔案：</span>
+          <input type="file" id="custom-svg-file" accept=".svg,image/svg+xml" />
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="pill-btn" id="btn-cancel-svg">取消</button>
+        <button type="submit" class="primary-btn">加入標籤</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Hidden Print Container (Only visible during @media print) -->
+  <div id="print-sheet" class="print-only"></div>
+
+  <script src="js/fonts.js"></script>
+  <script src="js/barcode.js"></script>
+  <script src="js/assets.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+
